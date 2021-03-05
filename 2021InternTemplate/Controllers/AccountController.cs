@@ -18,6 +18,7 @@ namespace _2021InternTemplate.Controllers
         private readonly UserManager<MoneroUser> _userManager;
         private readonly SignInManager<MoneroUser> _loginManager;
         private readonly IMoneroEmailService _emailService;
+
         public AccountController(ILogger<AccountController> logger,
             UserManager<MoneroUser> userManager,
             SignInManager<MoneroUser> loginManager,
@@ -79,22 +80,41 @@ namespace _2021InternTemplate.Controllers
                 _emailService.SendLoginCode(user.Email, code);
                 user.Code = code;
                 await _userManager.UpdateAsync(user);
+                HttpContext.Session.SetString("UserName", user.UserName);
+
                 HttpContext.Session.SetString("UserId", user.Id);
                 return RedirectToAction("ConfirmCode", "Account");
             }
             return View(viewModel);
         }
 
-        [HttpPost]
 
-        public IActionResult Confirm(ConfirmCode viewModel)
+        public IActionResult ConfirmCode()
         {
+            return View();
+            
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> ConfirmCode(ConfirmCode viewModel)
+        {
+            string UserName = HttpContext.Session.GetString("UserName");
+            MoneroUser user = await _userManager.FindByNameAsync(UserName);
 
+            if (user.Code == viewModel.Confirm) 
             {
-                return RedirectToAction("Index", "Home");
-            }
 
+               await _loginManager.SignInAsync(user, false);
+                return RedirectToAction("Index", "Home");
+                
+            } 
+
+            else
+            {
+
+                return RedirectToAction("Login", "Account");
+
+            }
 
         }
 

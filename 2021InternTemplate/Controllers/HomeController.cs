@@ -33,8 +33,8 @@ namespace _2021InternTemplate.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Privacy()
-        {            
+        public IActionResult Privacy()
+        {
             return View();
         }
 
